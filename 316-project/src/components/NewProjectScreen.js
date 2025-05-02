@@ -16,7 +16,7 @@ const NewProjectScreen = () => {
 
     console.log("Project Created:", projectName, selectedConfig);
 
-    // Burada proje verisi saklanabilir (context, localStorage vs.)
+    // Burada proje verisi saklanabilir 
 
     navigate("/dashboard");
   };

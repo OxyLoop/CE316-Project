@@ -7,6 +7,9 @@ const HomeScreen = () => {
 
   return (
     <div className="container">
+
+      <img src="/logo.png" alt="Project Logo" style={{ width: "120px", marginBottom: "10px" }} />
+
       <h1 className="title">Integrated Assignment Environment</h1>
       <p className="subtitle">
         Organize, Manage and Evaluate Assignments Easily
