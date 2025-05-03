@@ -51,14 +51,13 @@ const ProjectDashboard: React.FC = () => {
       <input
         type="file"
         multiple
-        // TypeScript'in tanımadığı propları burada ref üzerinden manuel set edebilirsin:
         ref={(ref) => {
           if (ref) (ref as any).webkitdirectory = true;
         }}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           const fileList = e.target.files;
           if (fileList && fileList.length > 0) {
-            setZipFolder(fileList[0].webkitRelativePath.split("/")[0]); // klasör ismini çek
+            setZipFolder(fileList[0].webkitRelativePath.split("/")[0]);
           }
         }}
         style={{ marginBottom: "15px" }}
