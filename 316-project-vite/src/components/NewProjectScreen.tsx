@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HomeScreen.css";
 
 const NewProjectScreen = () => {
   const [projectName, setProjectName] = useState("");
   const [selectedConfig, setSelectedConfig] = useState("");
-  const [configList, setConfigList] = useState(["C", "Java", "Python"]);
+  const [configList] = useState(["C", "Java", "Python"]);
   const navigate = useNavigate();
 
   const handleCreateProject = () => {

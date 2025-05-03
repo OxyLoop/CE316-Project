@@ -1,6 +1,6 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./HomeScreen.css";
+
 
 const HomeScreen = () => {
   const navigate = useNavigate();
@@ -8,7 +8,6 @@ const HomeScreen = () => {
   return (
     <div className="container">
 
-      <img src="/logo.png" alt="Project Logo" style={{ width: "120px", marginBottom: "10px" }} />
 
       <h1 className="title">Integrated Assignment Environment</h1>
       <p className="subtitle">
