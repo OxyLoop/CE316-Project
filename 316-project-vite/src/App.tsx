@@ -1,7 +1,7 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import ProjectDashboard from "./components/ProjectDashboard.tsx";
 import HomeScreen from "./components/HomeScreen.tsx";
 import NewProjectScreen from "./components/NewProjectScreen.tsx";
+import ConfigurationsScreen from "./components/ConfigurationsScreen.tsx";
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/new" element={<NewProjectScreen />} />
-        <Route path="/dashboard" element={<ProjectDashboard />} />
+        <Route path="/configurations" element={<ConfigurationsScreen />} />
       </Routes>
     </Router>
   );

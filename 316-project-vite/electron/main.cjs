@@ -47,3 +47,44 @@ ipcMain.handle("run-java", async (event, javaFilePath, args = []) => {
     });
   });
 });
+
+ipcMain.handle("run-c", async (event, cFilePath, args = []) => {
+  const dir = path.dirname(cFilePath);
+  const fileName = path.basename(cFilePath, ".c");
+
+  const compileCmd = `gcc ${fileName}.c -o ${fileName}.exe`;
+  const runCmd = `${fileName}.exe ${args.join(" ")}`;
+
+  return new Promise((resolve) => {
+    exec(compileCmd, { cwd: dir }, (compileErr, _, compileStderr) => {
+      if (compileErr) {
+        return resolve({ output: "", error: compileStderr || "Compilation failed." });
+      }
+
+      exec(runCmd, { cwd: dir }, (runErr, runStdout, runStderr) => {
+        if (runErr) {
+          return resolve({ output: "", error: runStderr || "Execution failed." });
+        }
+        return resolve({ output: runStdout, error: "" });
+      });
+    });
+  });
+});
+
+ipcMain.handle("run-python", async (event, pyFilePath, args = []) => {
+  const dir = path.dirname(pyFilePath);
+  const fileName = path.basename(pyFilePath);
+
+  const runCmd = `python "${fileName}" ${args.join(" ")}`;
+
+  return new Promise((resolve) => {
+    exec(runCmd, { cwd: dir }, (err, stdout, stderr) => {
+      if (err) {
+        return resolve({ output: "", error: stderr || "Execution failed." });
+      }
+      return resolve({ output: stdout, error: "" });
+    });
+  });
+});
+
+
