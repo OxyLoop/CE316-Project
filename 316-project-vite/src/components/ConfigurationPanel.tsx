@@ -10,7 +10,7 @@ type Config = {
 
 type Props = {
   onClose: () => void;
-  editConfig?: Config | null; // varsa düzenlenecek config
+  editConfig?: Config | null; 
 };
 
 const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
@@ -19,7 +19,6 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
   const [inputFormat, setInputFormat] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
 
-  // Eğer düzenleme modundaysa, alanları doldur
   useEffect(() => {
     if (editConfig) {
       setConfigName(editConfig.name);
@@ -46,12 +45,10 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
 
     let updated;
     if (editConfig) {
-      // 🔁 Düzenleme modu: eskiyi sil, yeniyi ekle
       updated = existing.map((conf) =>
         conf.name === editConfig.name ? newConfig : conf
       );
     } else {
-      // ➕ Yeni ekleme
       updated = [...existing, newConfig];
     }
 
