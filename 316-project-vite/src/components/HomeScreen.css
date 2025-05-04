@@ -1,10 +1,16 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #3a3f47;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #f4f4f4;
+  background-color: #3a3f47;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
   padding: 1rem;
@@ -28,14 +34,15 @@
 }
 
 .title {
-  color: #6b46c1;
+  color: #7289da;
   font-size: 2.2rem;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
 .subtitle {
-  color: #333;
+  color: white; /* Daha okunaklı beyaz */
+  opacity: 1 ;
   margin-bottom: 30px;
   font-size: 1.1rem;
   max-width: 80%;
@@ -70,6 +77,27 @@
   align-items: center;
   z-index: 999;
 }
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #43cea2, #185a9d);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-bottom: 15px;
+}
+
+.custom-file-upload:hover {
+  transform: scale(1.05);
+}
+
+.custom-file-upload input[type="file"] {
+  display: none;
+}
+
 
 .config-panel {
   background: #1f1f1f;
@@ -223,6 +251,43 @@
   margin-bottom: 15px;
   color: white;
 }
+
+.result-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.result-modal {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 15px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.result-modal h2 {
+  margin-bottom: 10px;
+}
+
+.result-modal button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #6b46c1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 
 
 

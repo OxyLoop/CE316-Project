@@ -8,18 +8,18 @@ const NewProjectScreen = () => {
   const [selectedConfig, setSelectedConfig] = useState("");
   const [configList, setConfigList] = useState<{ name: string }[]>([]);
   const [showConfigPanel, setShowConfigPanel] = useState(false);
-  const [selectedZips, setSelectedZips] = useState<FileList | null>(null);
+  const [selectedZipPath, setSelectedZipPath] = useState("");
   const navigate = useNavigate();
 
-  // localStorage'dan config'leri yükle
+  // Configurations'ı localStorage'dan yükle
   useEffect(() => {
     const configs = JSON.parse(localStorage.getItem("configurations") || "[]");
     setConfigList(configs);
   }, [showConfigPanel]);
 
   const handleCreateProject = () => {
-    if (!projectName || !selectedConfig) {
-      alert("Please, fill all fields.");
+    if (!projectName || !selectedConfig || !selectedZipPath) {
+      alert("Please, fill all fields and select a ZIP file.");
       return;
     }
 
@@ -27,6 +27,7 @@ const NewProjectScreen = () => {
       name: projectName,
       config: selectedConfig,
       createdAt: new Date().toISOString(),
+      filePath: selectedZipPath, // ✅ Artık path de kaydediliyor
     };
 
     const existingProjects = JSON.parse(localStorage.getItem("projects") || "[]");
@@ -36,6 +37,7 @@ const NewProjectScreen = () => {
     alert("✅ Project Created!");
     setProjectName("");
     setSelectedConfig("");
+    setSelectedZipPath("");
   };
 
   return (
@@ -82,17 +84,21 @@ const NewProjectScreen = () => {
         ))}
       </select>
 
-      <label>📦 Select ZIP File(s)</label>
-      <input
-        type="file"
-        multiple
-        accept=".zip"
-        onChange={(e) => {
-          const fileList = e.target.files;
-          setSelectedZips(fileList);
-        }}
-        style={{ marginBottom: "15px" }}
-      />
+      <label className="custom-file-upload">
+        📦 Select ZIP File
+        <input
+          type="file"
+          accept=".zip"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setSelectedZipPath((file as any).path); // Electron path
+              alert("Selected ZIP: " + file.name);
+            }
+          }}
+        />
+      </label>
+
 
       <div style={{ display: "flex", gap: "10px" }}>
         <button className="btn new" onClick={handleCreateProject}>

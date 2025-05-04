@@ -12,9 +12,11 @@
     "start": "electron ."
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.5.3",
+    "unzipper": "^0.12.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

@@ -15,6 +15,10 @@ declare global {
         output: string;
         error: string;
       }>;
+      extractAndRun: (zipPath: string, args: string[], language: string) => Promise<{
+        output: string;
+        error: string;
+      }>;
     };
   }
 }

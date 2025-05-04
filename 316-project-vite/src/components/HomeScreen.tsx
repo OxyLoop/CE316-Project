@@ -2,14 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./HomeScreen.css";
 import OpenProjectPanel from "./OpenProjectPanel";
+import ConfigurationsScreen from "./ConfigurationsScreen";
 
 const HomeScreen = () => {
   const navigate = useNavigate();
   const [showOpenPanel, setShowOpenPanel] = useState(false);
+  const [showConfigs, setShowConfigs] = useState(false);
 
   return (
     <div className="container">
       {showOpenPanel && <OpenProjectPanel onClose={() => setShowOpenPanel(false)} />}
+      {showConfigs && <ConfigurationsScreen onClose={() => setShowConfigs(false)} />}
 
       <h1 className="title">Integrated Assignment Environment</h1>
       <p className="subtitle">Organize, Manage and Evaluate Assignments Easily</p>
@@ -23,11 +26,13 @@ const HomeScreen = () => {
           📂 Open Project
         </button>
 
-        <button className="btn help" onClick={() => navigate("/configurations")}>
-        🛠️ Configurations
+        <button className="btn help" onClick={() => setShowConfigs(true)}>
+          ⚙️ Configurations
         </button>
 
-        <button className="btn help">❓ Help</button>
+        <button className="btn help">
+          ❓ Help
+        </button>
       </div>
 
       <div className="footer">© 2025 316-Project | Version 1.0.0</div>

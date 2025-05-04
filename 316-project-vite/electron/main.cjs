@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const fs = require("fs");
 const { exec } = require("child_process");
+const unzipper = require("unzipper");
+const os = require("os");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -8,7 +11,7 @@ function createWindow() {
     height: 700,
     webPreferences: {
       contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"), // frontend ile köprü kuracak dosya
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -16,75 +19,83 @@ function createWindow() {
 }
 
 app.whenReady().then(createWindow);
-
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-
-// 🧠 Requirement 7: Java Compile & Run IPC Handler
-ipcMain.handle("run-java", async (event, javaFilePath, args = []) => {
-  const dir = path.dirname(javaFilePath);
-  const fileName = path.basename(javaFilePath, ".java");
-
-  // 1. Compile step
+// 🧠 Dilleri çalıştıran yardımcı fonksiyonlar
+async function runJava(filePath, args = []) {
+  const dir = path.dirname(filePath);
+  const fileName = path.basename(filePath, ".java");
   const compileCmd = `javac ${fileName}.java`;
   const runCmd = `java ${fileName} ${args.join(" ")}`;
 
   return new Promise((resolve) => {
-    exec(compileCmd, { cwd: dir }, (compileErr, _, compileStderr) => {
-      if (compileErr) {
-        return resolve({ output: "", error: compileStderr || "Compilation failed." });
-      }
+    exec(compileCmd, { cwd: dir }, (err, _, stderr) => {
+      if (err) return resolve({ output: "", error: stderr || "Java compile failed." });
 
-      // 2. Run step
-      exec(runCmd, { cwd: dir }, (runErr, runStdout, runStderr) => {
-        if (runErr) {
-          return resolve({ output: "", error: runStderr || "Execution failed." });
-        }
-        return resolve({ output: runStdout, error: "" });
+      exec(runCmd, { cwd: dir }, (err2, stdout, stderr2) => {
+        if (err2) return resolve({ output: "", error: stderr2 || "Java run failed." });
+        resolve({ output: stdout, error: "" });
       });
     });
   });
-});
+}
 
-ipcMain.handle("run-c", async (event, cFilePath, args = []) => {
-  const dir = path.dirname(cFilePath);
-  const fileName = path.basename(cFilePath, ".c");
-
+async function runC(filePath, args = []) {
+  const dir = path.dirname(filePath);
+  const fileName = path.basename(filePath, ".c");
   const compileCmd = `gcc ${fileName}.c -o ${fileName}.exe`;
   const runCmd = `${fileName}.exe ${args.join(" ")}`;
 
   return new Promise((resolve) => {
-    exec(compileCmd, { cwd: dir }, (compileErr, _, compileStderr) => {
-      if (compileErr) {
-        return resolve({ output: "", error: compileStderr || "Compilation failed." });
-      }
+    exec(compileCmd, { cwd: dir }, (err, _, stderr) => {
+      if (err) return resolve({ output: "", error: stderr || "C compile failed." });
 
-      exec(runCmd, { cwd: dir }, (runErr, runStdout, runStderr) => {
-        if (runErr) {
-          return resolve({ output: "", error: runStderr || "Execution failed." });
-        }
-        return resolve({ output: runStdout, error: "" });
+      exec(runCmd, { cwd: dir }, (err2, stdout, stderr2) => {
+        if (err2) return resolve({ output: "", error: stderr2 || "C run failed." });
+        resolve({ output: stdout, error: "" });
       });
     });
   });
-});
+}
 
-ipcMain.handle("run-python", async (event, pyFilePath, args = []) => {
-  const dir = path.dirname(pyFilePath);
-  const fileName = path.basename(pyFilePath);
-
+async function runPython(filePath, args = []) {
+  const dir = path.dirname(filePath);
+  const fileName = path.basename(filePath);
   const runCmd = `python "${fileName}" ${args.join(" ")}`;
 
   return new Promise((resolve) => {
     exec(runCmd, { cwd: dir }, (err, stdout, stderr) => {
-      if (err) {
-        return resolve({ output: "", error: stderr || "Execution failed." });
-      }
-      return resolve({ output: stdout, error: "" });
+      if (err) return resolve({ output: "", error: stderr || "Python run failed." });
+      resolve({ output: stdout, error: "" });
     });
   });
+}
+
+// ✅ ZIP'ten çıkar ve ilgili dili çalıştır
+ipcMain.handle("extract-and-run", async (event, zipPath, args = [], language) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ce316-"));
+
+  try {
+    await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
+
+    const ext = language === "java" ? ".java" : language === "c" ? ".c" : ".py";
+    const files = fs.readdirSync(tempDir);
+    const mainFile = files.find(f => f.endsWith(ext));
+
+    if (!mainFile) {
+      return { output: "", error: `No ${ext} file found in ZIP.` };
+    }
+
+    const fullPath = path.join(tempDir, mainFile);
+
+    if (language === "java") return await runJava(fullPath, args);
+    if (language === "c") return await runC(fullPath, args);
+    if (language === "python") return await runPython(fullPath, args);
+
+    return { output: "", error: "Unsupported language." };
+  } catch (err) {
+    return { output: "", error: err.message || "Extraction or execution failed." };
+  }
 });
-
-
