@@ -81,7 +81,7 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
                   <input
                     value={editData.inputFormat}
                     onChange={(e) => setEditData({ ...editData, inputFormat: e.target.value })}
-                    placeholder="Input Format"
+                    placeholder="Input Values"
                   />
                   <input
                     value={editData.expectedOutput}
@@ -96,7 +96,7 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
                 <>
                   <h4>🛠 {conf.name}</h4>
                   <p><strong>Language:</strong> {conf.language}</p>
-                  <p><strong>Input Format:</strong> {conf.inputFormat}</p>
+                  <p><strong>Input Values:</strong> {conf.inputFormat}</p>
                   <p><strong>Expected Output:</strong> {conf.expectedOutput}</p>
                   <div style={{ display: "flex", gap: "10px" }}>
                     <button className="btn help" onClick={() => handleEdit(idx)}>✏️ Edit</button>

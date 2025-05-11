@@ -10,7 +10,7 @@ type Config = {
 
 type Props = {
   onClose: () => void;
-  editConfig?: Config | null; 
+  editConfig?: Config | null;
 };
 
 const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
@@ -19,6 +19,7 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
   const [inputFormat, setInputFormat] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
 
+  // Düzenleme modundaysa var olan değerleri set et
   useEffect(() => {
     if (editConfig) {
       setConfigName(editConfig.name);
@@ -28,6 +29,7 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
     }
   }, [editConfig]);
 
+  // Kaydetme işlemi
   const handleSave = () => {
     if (!configName || !language) {
       alert("Please fill required fields.");
@@ -43,17 +45,13 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
 
     const existing: Config[] = JSON.parse(localStorage.getItem("configurations") || "[]");
 
-    let updated;
-    if (editConfig) {
-      updated = existing.map((conf) =>
-        conf.name === editConfig.name ? newConfig : conf
-      );
-    } else {
-      updated = [...existing, newConfig];
-    }
+    const updated = editConfig
+      ? existing.map((conf) =>
+          conf.name === editConfig.name ? newConfig : conf
+        )
+      : [...existing, newConfig];
 
     localStorage.setItem("configurations", JSON.stringify(updated));
-
     alert(editConfig ? "✅ Configuration updated!" : "✅ Configuration added!");
     onClose();
   };
@@ -62,13 +60,14 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
     <div className="config-panel-overlay">
       <div className="config-panel">
         <button className="close-btn" onClick={onClose}>❌</button>
-        <h2>{editConfig ? "Edit Configuration" : "Add New Configuration"}</h2>
+        <h2>{editConfig ? "Edit Configuration" : "Create New Configuration"}</h2>
 
         <label>Configuration Name:</label>
         <input
           value={configName}
           onChange={(e) => setConfigName(e.target.value)}
-          disabled={!!editConfig} // ismi değişmesin
+          disabled={!!editConfig}
+          placeholder="Example: Sorting Algorithm"
         />
 
         <label>Language:</label>
@@ -79,14 +78,22 @@ const ConfigurationPanel: React.FC<Props> = ({ onClose, editConfig }) => {
           <option value="Python">Python</option>
         </select>
 
-        <label>Input Format:</label>
-        <input value={inputFormat} onChange={(e) => setInputFormat(e.target.value)} />
+        <label>Input Values:</label>
+        <input
+          value={inputFormat}
+          onChange={(e) => setInputFormat(e.target.value)}
+          placeholder="Example: 5 10 15"
+        />
 
-        <label>Expected Output Format:</label>
-        <input value={expectedOutput} onChange={(e) => setExpectedOutput(e.target.value)} />
+        <label>Expected Output:</label>
+        <input
+          value={expectedOutput}
+          onChange={(e) => setExpectedOutput(e.target.value)}
+          placeholder="Example: 30"
+        />
 
         <button className="btn new" style={{ marginTop: "15px" }} onClick={handleSave}>
-          {editConfig ? "💾 Save Changes" : "➕ Add Configuration"}
+          {editConfig ? "💾 Save Changes" : "➕ Create Configuration"}
         </button>
       </div>
     </div>
