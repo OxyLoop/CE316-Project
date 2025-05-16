@@ -1,3 +1,4 @@
+// 📁 src/ConfigurationsScreen.tsx
 import React, { useState, useEffect } from "react";
 import "./HomeScreen.css";
 
@@ -9,7 +10,7 @@ type Config = {
 };
 
 type Props = {
-  onClose?: () => void; // opsiyonel hale getirildi
+  onClose?: () => void;
 };
 
 const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
@@ -47,6 +48,42 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
     setEditingIndex(null);
   };
 
+  // ✅ Export: config'leri JSON dosyası olarak indir
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(configs, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "configurations_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ✅ Import: seçilen JSON dosyasından config'leri içeri al
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (Array.isArray(json)) {
+          localStorage.setItem("configurations", JSON.stringify(json));
+          setConfigs(json);
+          alert("✅ Configurations imported successfully!");
+        } else {
+          alert("⚠️ Invalid configuration file.");
+        }
+      } catch (err) {
+        alert("❌ Failed to import configuration file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="open-panel-overlay">
       <div className="open-panel">
@@ -57,6 +94,16 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
         )}
         <h2>📚 Configuration List</h2>
         <p className="subtitle">Manage your saved configurations</p>
+
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+  <button className="config-action-btn" onClick={handleExport}>
+    📤 Export
+  </button>
+  <label className="config-action-btn">
+    📥 Import
+    <input type="file" accept=".json" onChange={handleImport} />
+  </label>
+</div>
 
         {configs.length === 0 ? (
           <p>No configurations saved yet.</p>
@@ -81,7 +128,7 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
                   <input
                     value={editData.inputFormat}
                     onChange={(e) => setEditData({ ...editData, inputFormat: e.target.value })}
-                    placeholder="Input Values"
+                    placeholder="Input Format"
                   />
                   <input
                     value={editData.expectedOutput}
@@ -96,7 +143,7 @@ const ConfigurationsScreen: React.FC<Props> = ({ onClose }) => {
                 <>
                   <h4>🛠 {conf.name}</h4>
                   <p><strong>Language:</strong> {conf.language}</p>
-                  <p><strong>Input Values:</strong> {conf.inputFormat}</p>
+                  <p><strong>Input Format:</strong> {conf.inputFormat}</p>
                   <p><strong>Expected Output:</strong> {conf.expectedOutput}</p>
                   <div style={{ display: "flex", gap: "10px" }}>
                     <button className="btn help" onClick={() => handleEdit(idx)}>✏️ Edit</button>
