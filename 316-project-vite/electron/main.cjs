@@ -5,6 +5,8 @@ const { exec } = require("child_process");
 const unzipper = require("unzipper");
 const os = require("os");
 
+console.log("main.cjs baslatildi");
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
@@ -23,24 +25,42 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-// 🧠 Dilleri çalıştıran yardımcı fonksiyonlar
 async function runJava(filePath, args = []) {
   const dir = path.dirname(filePath);
   const fileName = path.basename(filePath, ".java");
   const compileCmd = `javac ${fileName}.java`;
-  const runCmd = `java ${fileName} ${args.join(" ")}`;
+  const runCmd = `java -cp . ${fileName} ${args.join(" ")}`;
+
+  console.log("Derleme komutu:", compileCmd);
+  console.log("Calistirma komutu:", runCmd);
 
   return new Promise((resolve) => {
     exec(compileCmd, { cwd: dir }, (err, _, stderr) => {
-      if (err) return resolve({ output: "", error: stderr || "Java compile failed." });
+      if (err) {
+        console.log("Derleme hatasi:", stderr);
+        return resolve({ output: "", error: stderr || "Java compile failed." });
+      }
 
       exec(runCmd, { cwd: dir }, (err2, stdout, stderr2) => {
-        if (err2) return resolve({ output: "", error: stderr2 || "Java run failed." });
-        resolve({ output: stdout, error: "" });
+        if (err2) {
+          console.log("Calistirma hatasi:", stderr2);
+          return resolve({ output: "", error: stderr2 || "Java run failed." });
+        }
+
+        const output = stdout.trim();
+        if (output.length === 0) {
+          console.log("Java cikti yok.");
+        } else {
+          console.log("Java cikti:", output);
+        }
+
+        resolve({ output, error: "" });
       });
     });
   });
 }
+
+
 
 async function runC(filePath, args = []) {
   const dir = path.dirname(filePath);
@@ -73,29 +93,47 @@ async function runPython(filePath, args = []) {
   });
 }
 
-// ✅ ZIP'ten çıkar ve ilgili dili çalıştır
 ipcMain.handle("extract-and-run", async (event, zipPath, args = [], language) => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ce316-"));
+  console.log("ZIP cikartildi:", tempDir);
 
-  try {
-    await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
+  function findSourceFilesRecursive(dir, extension) {
+    let result = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-    const ext = language === "java" ? ".java" : language === "c" ? ".c" : ".py";
-    const files = fs.readdirSync(tempDir);
-    const mainFile = files.find(f => f.endsWith(ext));
-
-    if (!mainFile) {
-      return { output: "", error: `No ${ext} file found in ZIP.` };
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        result = result.concat(findSourceFilesRecursive(fullPath, extension));
+      } else if (entry.name.toLowerCase().endsWith(extension)) {
+        result.push(fullPath);
+      }
     }
 
-    const fullPath = path.join(tempDir, mainFile);
-
-    if (language === "java") return await runJava(fullPath, args);
-    if (language === "c") return await runC(fullPath, args);
-    if (language === "python") return await runPython(fullPath, args);
-
-    return { output: "", error: "Unsupported language." };
-  } catch (err) {
-    return { output: "", error: err.message || "Extraction or execution failed." };
+    return result;
   }
-});
+
+ try {
+  await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
+
+  language = language.toLowerCase();  // ✅ Bunu ekle
+
+  const ext = language === "java" ? ".java" : language === "c" ? ".c" : ".py";
+  const sourceFiles = findSourceFilesRecursive(tempDir, ext);
+  console.log("Bulunan kaynak dosyalar:", sourceFiles);
+
+  if (sourceFiles.length === 0) {
+    return { output: "", error: `No ${ext} file found in ZIP.` };
+  }
+
+  const fullPath = sourceFiles[0];
+
+  if (language === "java") return await runJava(fullPath, args);
+  if (language === "c") return await runC(fullPath, args);
+  if (language === "python") return await runPython(fullPath, args);
+
+  return { output: "", error: "Unsupported language." };
+} catch (err) {
+  return { output: "", error: err.message || "Extraction or execution failed." };
+}}
+);

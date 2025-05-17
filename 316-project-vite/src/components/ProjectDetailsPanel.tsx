@@ -1,3 +1,21 @@
+function findSourceFilesRecursive(dir: string, extension: string): string[] {
+  const fs = window.require('fs');
+  const path = window.require('path');
+  let result: string[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      result = result.concat(findSourceFilesRecursive(fullPath, extension));
+    } else if (entry.name.endsWith(extension)) {
+      result.push(fullPath);
+    }
+  }
+
+  return result;
+}
+
 import React, { useEffect, useState } from "react";
 import "./HomeScreen.css";
 import ResultModal from "./ResultModal";
