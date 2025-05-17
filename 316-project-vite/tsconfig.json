@@ -16,5 +16,5 @@
   "include": [
     "src",
     "src/types/electron-api.d.ts"
-  ]
+, "vite-env.d.ts"  ]
 }     

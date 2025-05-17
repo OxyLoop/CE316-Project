@@ -69,8 +69,17 @@ const ProjectDetailsPanel: React.FC<Props> = ({ project, onClose }) => {
     const expected = configDetails.expectedOutput.trim();
     const language = configDetails.language.toLowerCase();
 
-    try {
-      const result = await window.electronAPI.extractAndRun(project.filePath, args, language);
+     try {
+      
+      const electronAPI = window.electronAPI as unknown as {
+        extractAndRun: (
+          zipPath: string,
+          args: string[],
+          language: string
+        ) => Promise<{ output: string; error: string }>;
+      };
+
+      const result = await electronAPI.extractAndRun(project.filePath, args, language);
 
       if (result.error) {
         alert("⛔ Hata:\n" + result.error);

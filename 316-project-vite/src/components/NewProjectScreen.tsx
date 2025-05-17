@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "./HomeScreen.css";
 import ConfigurationPanel from "./ConfigurationPanel";
 
+declare global {
+  interface Window {
+    electronAPI: {
+      openUserManual: () => Promise<void>;
+    };
+  }
+}
+
 const NewProjectScreen = () => {
   const [projectName, setProjectName] = useState("");
   const [selectedConfig, setSelectedConfig] = useState("");
@@ -39,6 +47,10 @@ const NewProjectScreen = () => {
     setSelectedConfig("");
     setSelectedZipPath("");
   };
+
+    const openUserManual = () => {
+  window.electronAPI.openUserManual();
+};
 
   return (
     <div className="container">
@@ -104,8 +116,8 @@ const NewProjectScreen = () => {
         <button className="btn new" onClick={handleCreateProject}>
           ➕ Create
         </button>
-        <button className="btn help" onClick={() => setShowConfigPanel(true)}>
-          ⚙️ Create New Configuration
+               <button className="btn help" onClick={openUserManual}>
+          ❓ Help
         </button>
       </div>
     </div>

@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   runC: (filePath, args) => ipcRenderer.invoke("run-c", filePath, args),
   runPython: (filePath, args) => ipcRenderer.invoke("run-python", filePath, args),
   extractAndRun: (zipPath, args, language) =>
-    ipcRenderer.invoke("extract-and-run", zipPath, args, language), // ✅ EKLENDİ
+    ipcRenderer.invoke("extract-and-run", zipPath, args, language),
+  openUserManual: () => ipcRenderer.invoke("open-user-manual"),
 });

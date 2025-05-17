@@ -4,10 +4,22 @@ import "./HomeScreen.css";
 import OpenProjectPanel from "./OpenProjectPanel";
 import ConfigurationsScreen from "./ConfigurationsScreen";
 
+declare global {
+  interface Window {
+    electronAPI: {
+      openUserManual: () => Promise<void>;
+    };
+  }
+}
+
 const HomeScreen = () => {
   const navigate = useNavigate();
   const [showOpenPanel, setShowOpenPanel] = useState(false);
   const [showConfigs, setShowConfigs] = useState(false);
+
+  const openUserManual = () => {
+    window.electronAPI.openUserManual();
+  };
 
   return (
     <div className="container">
@@ -30,7 +42,9 @@ const HomeScreen = () => {
           ⚙️ Configurations
         </button>
 
-        <button className="btn help">
+        {/* Help butonu  */}
+        <button className="btn help" onClick={openUserManual}>
+       
           ❓ Help
         </button>
       </div>

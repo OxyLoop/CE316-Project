@@ -19,6 +19,8 @@ declare global {
         output: string;
         error: string;
       }>;
+       openUserManual: () => Promise<void>;
+
     };
   }
 }

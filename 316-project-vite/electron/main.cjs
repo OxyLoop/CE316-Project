@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -19,6 +19,12 @@ function createWindow() {
 
   win.loadFile(path.join(__dirname, "../dist/index.html"));
 }
+
+ipcMain.handle("open-user-manual", async () => {
+  const pdfPath = path.join(__dirname, "..", "public", "UserManual.pdf");
+  await shell.openPath(pdfPath);
+});
+
 
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
