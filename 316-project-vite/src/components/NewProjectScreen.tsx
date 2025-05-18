@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./HomeScreen.css";
 import ConfigurationPanel from "./ConfigurationPanel";
 
-
-
 const NewProjectScreen = () => {
   const [projectName, setProjectName] = useState("");
   const [selectedConfig, setSelectedConfig] = useState("");
@@ -13,7 +11,6 @@ const NewProjectScreen = () => {
   const [selectedZipPath, setSelectedZipPath] = useState("");
   const navigate = useNavigate();
 
-  // Configurations'ı localStorage'dan yükle
   useEffect(() => {
     const configs = JSON.parse(localStorage.getItem("configurations") || "[]");
     setConfigList(configs);
@@ -29,7 +26,7 @@ const NewProjectScreen = () => {
       name: projectName,
       config: selectedConfig,
       createdAt: new Date().toISOString(),
-      filePath: selectedZipPath, // ✅ Artık path de kaydediliyor
+      filePath: selectedZipPath,
     };
 
     const existingProjects = JSON.parse(localStorage.getItem("projects") || "[]");
@@ -41,10 +38,6 @@ const NewProjectScreen = () => {
     setSelectedConfig("");
     setSelectedZipPath("");
   };
-
-    const openUserManual = () => {
-  window.electronAPI.openUserManual();
-};
 
   return (
     <div className="container">
@@ -98,20 +91,19 @@ const NewProjectScreen = () => {
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setSelectedZipPath((file as any).path); // Electron path
+              setSelectedZipPath((file as any).path);
               alert("Selected ZIP: " + file.name);
             }
           }}
         />
       </label>
 
-
       <div style={{ display: "flex", gap: "10px" }}>
         <button className="btn new" onClick={handleCreateProject}>
           ➕ Create
         </button>
-               <button className="btn help" onClick={openUserManual}>
-          ❓ Help
+        <button className="btn help" onClick={() => setShowConfigPanel(true)}>
+          ⚙️ Create New Configuration
         </button>
       </div>
     </div>
