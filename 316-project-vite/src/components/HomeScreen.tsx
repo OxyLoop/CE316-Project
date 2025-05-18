@@ -4,14 +4,6 @@ import "./HomeScreen.css";
 import OpenProjectPanel from "./OpenProjectPanel";
 import ConfigurationsScreen from "./ConfigurationsScreen";
 
-declare global {
-  interface Window {
-    electronAPI: {
-      openUserManual: () => Promise<void>;
-    };
-  }
-}
-
 const HomeScreen = () => {
   const navigate = useNavigate();
   const [showOpenPanel, setShowOpenPanel] = useState(false);

@@ -90,7 +90,7 @@ const ProjectDetailsPanel: React.FC<Props> = ({ project, onClose }) => {
         setShowResult(true);
       }
     } catch (err: any) {
-      alert("⚠️ Exception:\n" + err.message);
+      alert("⚠ Exception:\n" + err.message);
     }
   };
 
@@ -113,7 +113,7 @@ const ProjectDetailsPanel: React.FC<Props> = ({ project, onClose }) => {
           <p><strong>Created At:</strong> {new Date(project.createdAt).toLocaleString()}</p>
 
           <button className="btn new" onClick={handleEvaluate}>
-            ▶️ Evaluate
+            ▶ Evaluate
           </button>
         </div>
       </div>
@@ -122,10 +122,11 @@ const ProjectDetailsPanel: React.FC<Props> = ({ project, onClose }) => {
         <ResultModal
           isCorrect={resultInfo.isCorrect}
           expected={resultInfo.expected}
+          projectName={project.name}
           actual={resultInfo.actual}
           onClose={() => setShowResult(false)}
         />
-      )}
+      ) }
     </>
   );
 };

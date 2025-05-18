@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain,shell ,dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { exec } = require("child_process");
@@ -19,17 +19,31 @@ function createWindow() {
 
   win.loadFile(path.join(__dirname, "../dist/index.html"));
 }
-
 ipcMain.handle("open-user-manual", async () => {
   const pdfPath = path.join(__dirname, "..", "public", "UserManual.pdf");
   await shell.openPath(pdfPath);
 });
 
-
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+function findSourceFilesRecursive(dir, extension) {
+  let result = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      result = result.concat(findSourceFilesRecursive(fullPath, extension));
+    } else if (entry.name.toLowerCase().endsWith(extension)) {
+      result.push(fullPath);
+    }
+  }
+
+  return result;
+}
 
 async function runJava(filePath, args = []) {
   const dir = path.dirname(filePath);
@@ -54,19 +68,12 @@ async function runJava(filePath, args = []) {
         }
 
         const output = stdout.trim();
-        if (output.length === 0) {
-          console.log("Java cikti yok.");
-        } else {
-          console.log("Java cikti:", output);
-        }
-
+        console.log(output.length === 0 ? "Java cikti yok." : "Java cikti:", output);
         resolve({ output, error: "" });
       });
     });
   });
 }
-
-
 
 async function runC(filePath, args = []) {
   const dir = path.dirname(filePath);
@@ -103,43 +110,55 @@ ipcMain.handle("extract-and-run", async (event, zipPath, args = [], language) =>
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ce316-"));
   console.log("ZIP cikartildi:", tempDir);
 
-  function findSourceFilesRecursive(dir, extension) {
-    let result = [];
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+  try {
+    await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
+    language = language.toLowerCase();
+    const ext = language === "java" ? ".java" : language === "c" ? ".c" : ".py";
+    const sourceFiles = findSourceFilesRecursive(tempDir, ext);
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        result = result.concat(findSourceFilesRecursive(fullPath, extension));
-      } else if (entry.name.toLowerCase().endsWith(extension)) {
-        result.push(fullPath);
-      }
+    if (sourceFiles.length === 0) {
+      return { output: "", error: `No ${ext} file found in ZIP.` };
     }
 
-    return result;
+    const fullPath = sourceFiles[0];
+    if (language === "java") return await runJava(fullPath, args);
+    if (language === "c") return await runC(fullPath, args);
+    if (language === "python") return await runPython(fullPath, args);
+    return { output: "", error: "Unsupported language." };
+  } catch (err) {
+    return { output: "", error: err.message || "Extraction or execution failed." };
+  }
+});
+
+ipcMain.handle("select-multiple-zips", async () => {
+  return await dialog.showOpenDialog({
+    title: "ZIP dosyalarini sec",
+    properties: ["openFile", "multiSelections"],
+    filters: [{ name: "ZIP Files", extensions: ["zip"] }],
+  });
+});
+
+ipcMain.handle("run-multiple-zips", async (event, zipPaths, args = [], language) => {
+  const results = [];
+
+  for (const zipPath of zipPaths) {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ce316-"));
+    await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
+
+    const ext = language.toLowerCase() === "java" ? ".java" : language === "c" ? ".c" : ".py";
+    const sourceFiles = findSourceFilesRecursive(tempDir, ext);
+    const fullPath = sourceFiles[0];
+
+    let result;
+    if (!fullPath) {
+      result = { output: "", error: `No ${ext} file found.` };
+    } else if (language === "java") result = await runJava(fullPath, args);
+    else if (language === "c") result = await runC(fullPath, args);
+    else if (language === "python") result = await runPython(fullPath, args);
+    else result = { output: "", error: "Unsupported language." };
+
+    results.push({ zip: path.basename(zipPath), ...result });
   }
 
- try {
-  await fs.createReadStream(zipPath).pipe(unzipper.Extract({ path: tempDir })).promise();
-
-  language = language.toLowerCase();  // ✅ Bunu ekle
-
-  const ext = language === "java" ? ".java" : language === "c" ? ".c" : ".py";
-  const sourceFiles = findSourceFilesRecursive(tempDir, ext);
-  console.log("Bulunan kaynak dosyalar:", sourceFiles);
-
-  if (sourceFiles.length === 0) {
-    return { output: "", error: `No ${ext} file found in ZIP.` };
-  }
-
-  const fullPath = sourceFiles[0];
-
-  if (language === "java") return await runJava(fullPath, args);
-  if (language === "c") return await runC(fullPath, args);
-  if (language === "python") return await runPython(fullPath, args);
-
-  return { output: "", error: "Unsupported language." };
-} catch (err) {
-  return { output: "", error: err.message || "Extraction or execution failed." };
-}}
-);
+  return results;
+});

@@ -3,13 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./HomeScreen.css";
 import ConfigurationPanel from "./ConfigurationPanel";
 
-declare global {
-  interface Window {
-    electronAPI: {
-      openUserManual: () => Promise<void>;
-    };
-  }
-}
+
 
 const NewProjectScreen = () => {
   const [projectName, setProjectName] = useState("");
