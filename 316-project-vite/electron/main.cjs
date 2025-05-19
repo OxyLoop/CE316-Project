@@ -20,8 +20,9 @@ function createWindow() {
   win.loadFile(path.join(__dirname, "../dist/index.html"));
 }
 ipcMain.handle("open-user-manual", async () => {
-  const pdfPath = path.join(__dirname, "..", "public", "UserManual.pdf");
-  await shell.openPath(pdfPath);
+  const pdfPath = path.join(process.resourcesPath, "UserManual.pdf");
+  console.log("User manual path:", pdfPath);
+  return await shell.openPath(pdfPath);
 });
 
 app.whenReady().then(createWindow);

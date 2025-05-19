@@ -45,6 +45,12 @@
       "dist",
       "electron"
     ],
+    "extraResources": [
+      {
+        "from": "dist/UserManual.pdf",
+        "to": "UserManual.pdf"
+      }
+    ],
     "win": {
       "target": "nsis"
     }
