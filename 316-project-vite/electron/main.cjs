@@ -20,10 +20,15 @@ function createWindow() {
   win.loadFile(path.join(__dirname, "../dist/index.html"));
 }
 ipcMain.handle("open-user-manual", async () => {
-  const pdfPath = path.join(process.resourcesPath, "UserManual.pdf");
-  console.log("User manual path:", pdfPath);
+  const isDev = !app.isPackaged;
+  const pdfPath = isDev
+    ? path.join(__dirname, "..", "public", "UserManual.pdf")  // dev
+    : path.join(process.resourcesPath, "UserManual.pdf");      // exe
+
+  console.log("📄 Açılacak PDF:", pdfPath);
   return await shell.openPath(pdfPath);
 });
+
 
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => {
